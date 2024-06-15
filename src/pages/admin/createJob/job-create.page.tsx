@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { createJob } from "@/lib/services/api/jobs";
 import { ChangeEvent, FormEvent, useState } from "react";
 
 function JobCreatePage() {
@@ -20,9 +21,16 @@ function JobCreatePage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
+
+    await createJob({
+      title: formData.title,
+      type: formData.type,
+      description: formData.description,
+      location: formData.location,
+      questions: [formData.q1, formData.q2, formData.q3],
+    });
   };
 
   return (

@@ -16,10 +16,10 @@ import AdminJobApplicationPage from './pages/admin/jobApplication/admin-job-appl
 import { ClerkProvider } from '@clerk/clerk-react';
 
 // Import your publishable key
-const PUBLISHABLE_KEY = "pk_test_c2F2aW5nLWNob3ctODcuY2xlcmsuYWNjb3VudHMuZGV2JA";
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
-  throw new Error('Missing Publishable Key');
+  throw new Error("Missing Publishable Key");
 }
 
 const router = createBrowserRouter([

@@ -2,21 +2,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { createJobApplication } from "@/lib/services/api/jobApplications";
+import { getJobById } from "@/lib/services/api/jobs";
 import { Job } from "@/types/job";
 import { useUser } from "@clerk/clerk-react";
 import { Briefcase, MapPin } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 function JobPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const user = useUser();
-  console.log(user);
+  const { user, isLoaded, isSignedIn } = useUser();
+  const navigate = useNavigate();
 
   const { id } = useParams();
-  console.log(id); //Gives us the value of the route param.
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -26,25 +27,20 @@ function JobPage() {
   });
 
   useEffect(() => {
-    const fetchJob = async () => {
+    if (!isLoaded) {
+      return;
+    }
 
-      const token = await window.Clerk.session.getToken();
+    if (!isSignedIn) {
+      return navigate("/sign-in");
+    }
 
-      const res = await fetch(`http://localhost:8000/jobs/${id}`, {
-        method: "GET",
-        headers:{
-          Authorization:`Bearer ${token}`,
-        }
-      });
-      const data: Job = await res.json();
-      return data;
-    };
-
-    fetchJob().then((data) => {
+    if (!id) return;
+    getJobById(id).then((data) => {
       setJob(data);
       setIsLoading(false);
     });
-  }, [id]);
+  }, [id, isLoaded, isSignedIn, navigate]);
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -54,19 +50,15 @@ function JobPage() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const res = await fetch("http://localhost:8000/jobApplications", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: user.user?.id,
-        fullName: formData.fullName,
-        job: id,
-        answers: [formData.a1, formData.a2, formData.a3],
-      }),
+    if (!user) return;
+    if (!id) return;
+
+    await createJobApplication({
+      userId: user.id,
+      fullName: formData.fullName,
+      job: id,
+      answers: [formData.a1, formData.a2, formData.a3],
     });
-    console.log(res);
   };
 
   if (isLoading || job === null) {
@@ -81,7 +73,7 @@ function JobPage() {
     <div>
       <div>
         <h2>{job.title}</h2>
-        <div className="flex items-center mt-4 gap-x-4">
+        <div className="flex items-center gap-x-4 mt-4">
           <div className="flex items-center gap-x-2">
             <Briefcase />
             <span>{job.type}</span>
@@ -92,7 +84,7 @@ function JobPage() {
           </div>
         </div>
       </div>
-      <div className="py-4 mt-4">
+      <div className="mt-4 py-4">
         <p>{job.description}</p>
       </div>
       <Separator />

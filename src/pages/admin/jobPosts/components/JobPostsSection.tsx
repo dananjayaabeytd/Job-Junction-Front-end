@@ -1,20 +1,16 @@
 import JobCard from "@/components/shared/JobCard";
+import { getJobs } from "@/lib/services/api/jobs";
+import { Job } from "@/types/job";
+import { useState, useEffect } from "react";
 
 function JobPostsSection() {
-  const jobs = [
-    {
-      _id: "xyz",
-      title: "Intern - Software Engineer",
-      type: "Full-time",
-      location: "Remote",
-    },
-    {
-      _id: "abc",
-      title: "Software Engineer",
-      type: "Full-time",
-      location: "Remote",
-    },
-  ];
+  const [jobs, setJobs] = useState<Job[]>([]);
+
+  useEffect(() => {
+    getJobs()
+      .then((data) => setJobs(data as Job[]))
+      .catch((err) => console.log(err));
+  }, []);
 
   return (
     <section className="py-8">
