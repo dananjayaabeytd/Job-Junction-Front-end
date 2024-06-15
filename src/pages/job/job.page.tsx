@@ -28,12 +28,12 @@ function JobPage() {
   useEffect(() => {
     const fetchJob = async () => {
 
-      //const token = await window.Clerk.session.getToken();
+      const token = await window.Clerk.session.getToken();
 
       const res = await fetch(`http://localhost:8000/jobs/${id}`, {
         method: "GET",
         headers:{
-          //Authorization:`Bearer ${token}`,
+          Authorization:`Bearer ${token}`,
         }
       });
       const data: Job = await res.json();
